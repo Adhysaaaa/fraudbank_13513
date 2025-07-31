@@ -1,0 +1,96 @@
+<!-- templates/predict_page.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Prediksi Manual Fraud</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/style.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+  <h2 class="mb-4">🔍 Prediksi Manual Transaksi Fraud</h2>
+
+  <form method="post" action="/predict">
+    <div class="row mb-2">
+      <div class="col"><input class="form-control" name="amount" placeholder="Amount" type="number" step="0.01" required></div>
+      <div class="col"><input class="form-control" name="oldbalanceOrg" placeholder="Old Balance Pengirim" type="number" step="0.01" required></div>
+      <div class="col"><input class="form-control" name="newbalanceOrig" placeholder="New Balance Pengirim" type="number" step="0.01" required></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col"><input class="form-control" name="oldbalanceDest" placeholder="Old Balance Penerima" type="number" step="0.01" required></div>
+      <div class="col"><input class="form-control" name="newbalanceDest" placeholder="New Balance Penerima" type="number" step="0.01" required></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col">
+        <select class="form-control" name="type" required>
+          <option value="">Pilih Type</option>
+          {% for opt in dropdowns['type'] %}
+            <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <select class="form-control" name="card_type" required>
+          <option value="">Pilih Card Type</option>
+          {% for opt in dropdowns['Card Type'] %}
+            <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <select class="form-control" name="exp_type" required>
+          <option value="">Pilih Exp Type</option>
+          {% for opt in dropdowns['Exp Type'] %}
+            <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <select class="form-control" name="gender" required>
+          <option value="">Pilih Gender</option>
+          {% for opt in dropdowns['Gender'] %}
+            <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <select class="form-control" name="city" required>
+          <option value="">Pilih City</option>
+          {% for opt in dropdowns['City'] %}
+            <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-success">Prediksi</button>
+  </form>
+
+  {% if prediction %}
+  <div class="alert alert-info mt-4">
+    <strong>Prediksi:</strong> 
+    {% if prediction.label == 1 %}
+      <span class="text-danger">Fraud ({{ prediction.prob }})</span>
+    {% else %}
+      <span class="text-success">Bukan Fraud ({{ prediction.prob }})</span>
+    {% endif %}
+  </div>
+  
+  {% if prediction.shap_img %}
+    <h4>Penjelasan Kontribusi Fitur:</h4>
+    <img src="data:image/png;base64,{{ prediction.shap_img }}" class="img-fluid mb-3"/>
+    <div class="alert alert-info">
+        {{ prediction.shap_text | safe }}
+    </div>
+{% endif %}
+  {% endif %}
+
+  {% if manual_history %}
+    <hr>
+    <h5>📄 Riwayat Prediksi Manual</h5>
+    <div class="table-responsive">
+      {{ manual_history | safe }}
+    </div>
+  {% endif %}
+
+  <a href="/" class="btn btn-outline-secondary mt-4">&larr; Kembali ke Dashboard</a>
+</body>
+</html>

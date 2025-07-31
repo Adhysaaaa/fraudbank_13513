@@ -1,0 +1,121 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fraud Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/style.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+  <h2 class="mb-4">🛡️ Dashboard Deteksi Fraud</h2>
+
+  <!-- Form Upload + Tombol Prediksi Manual -->
+  <form method="post" action="/upload" enctype="multipart/form-data" class="mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-6">
+        <input type="file" name="file" accept=".csv" class="form-control" required>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">📁 Unggah Dataset CSV</button>
+      </div>
+      <div class="col-auto">
+        <a href="/predict-page" class="btn btn-success">🔍 Prediksi Manual</a>
+      </div>
+    </div>
+  </form>
+
+  {% if not no_data %}
+    <div class="alert alert-info">Total Transaksi: <b>{{ total }}</b> |
+      Fraud: <b class="text-danger">{{ fraud }}</b> |
+      Non-Fraud: <b class="text-success">{{ nonfraud }}</b>
+    </div>
+
+    <h5>📊 Preview Dataset</h5>
+    {{ preview | safe }}
+
+    <h5 class="mt-4">📈 Visualisasi Data</h5>
+    {% if plot_image %}
+      <img src="data:image/png;base64,{{ plot_image }}" class="img-fluid border rounded shadow">
+    {% endif %}
+
+    <h5 class="mt-4">📋 Evaluasi Model <small class="text-muted"></small></h5>
+
+{% if report %}
+  <div class="row g-4">
+    <!-- Classification Report -->
+    <div class="col-md-6">
+      <h6>📑 Classification Report</h6>
+      <table class="table table-bordered table-sm text-center align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Label</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1-Score</th>
+            <th>Support</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for label, values in report.items() if label not in ['accuracy', 'macro avg', 'weighted avg'] %}
+            <tr>
+              <td><span class="badge bg-secondary">{{ label }}</span></td>
+              <td>{{ '%.2f'|format(values['precision']) }}</td>
+              <td>{{ '%.2f'|format(values['recall']) }}</td>
+              <td>{{ '%.2f'|format(values['f1-score']) }}</td>
+              <td>{{ values['support'] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot class="table-light">
+          <tr>
+            <th>Accuracy</th>
+            <td colspan="4"><b>{{ '%.2f'|format(report['accuracy']) }}</b></td>
+          </tr>
+          <tr>
+            <th>Macro Avg</th>
+            <td>{{ '%.2f'|format(report['macro avg']['precision']) }}</td>
+            <td>{{ '%.2f'|format(report['macro avg']['recall']) }}</td>
+            <td>{{ '%.2f'|format(report['macro avg']['f1-score']) }}</td>
+            <td>{{ report['macro avg']['support'] }}</td>
+          </tr>
+          <tr>
+            <th>Weighted Avg</th>
+            <td>{{ '%.2f'|format(report['weighted avg']['precision']) }}</td>
+            <td>{{ '%.2f'|format(report['weighted avg']['recall']) }}</td>
+            <td>{{ '%.2f'|format(report['weighted avg']['f1-score']) }}</td>
+            <td>{{ report['weighted avg']['support'] }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Confusion Matrix -->
+    <div class="col-md-6">
+      <h6>🔁 Confusion Matrix</h6>
+      <table class="table table-bordered text-center table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th></th>
+            <th><span class="text-primary">Pred 0</span></th>
+            <th><span class="text-primary">Pred 1</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th class="text-success">True 0</th>
+            <td>{{ matrix[0][0] }}</td>
+            <td>{{ matrix[0][1] }}</td>
+          </tr>
+          <tr>
+            <th class="text-danger">True 1</th>
+            <td>{{ matrix[1][0] }}</td>
+            <td>{{ matrix[1][1] }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+  {% endif %}
+</body>
+</html>
